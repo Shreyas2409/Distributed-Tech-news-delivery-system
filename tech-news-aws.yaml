@@ -1,0 +1,287 @@
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+data:
+  rabbitmq.conf: |
+    loopback_users = none
+    listeners.tcp.default = 5672
+    management.tcp.port = 15672
+---
+
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+spec:
+  serviceName: "rabbitmq-headless"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+  
+      nodeSelector:
+        kubernetes.io/arch: "amd64"
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3-management
+        ports:
+          - containerPort: 5672
+            name: amqp
+          - containerPort: 15672
+            name: management
+        env:
+          - name: RABBITMQ_ERLANG_COOKIE
+            value: "secret_cookie"
+          - name: RABBITMQ_DEFAULT_USER
+            value: "guest"
+          - name: RABBITMQ_DEFAULT_PASS
+            value: "guest"
+        volumeMounts:
+          - name: rabbitmq-config
+            mountPath: /etc/rabbitmq/rabbitmq.conf
+            subPath: rabbitmq.conf
+      volumes:
+      - name: rabbitmq-config
+        configMap:
+          name: rabbitmq-config
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+  selector:
+    app: rabbitmq
+  type: ClusterIP
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-headless
+  labels:
+    app: rabbitmq
+spec:
+  ports:
+    - port: 5672
+      name: amqp
+    - port: 15672
+      name: management
+  clusterIP: None
+  selector:
+    app: rabbitmq
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: publisher
+spec:
+  serviceName: "publisher-headless"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: publisher
+  template:
+    metadata:
+      labels:
+        app: publisher
+    spec:
+      # 
+      containers:
+      - name: publisher
+        image: shreyashc2409/tech-news-publisher1:multiarch
+        ports:
+          - containerPort: 8000
+        env:
+          - name: NODE_ID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: AUTH_TOKEN
+            value: "secret"
+          - name: NEWS_API_KEY
+            value: "f47e7ab31588411dafdf6f1c9e2cfbc7"
+          - name: RABBITMQ_HOST
+            value: "rabbitmq"
+          - name: RABBITMQ_USERNAME
+            value: "guest"
+          - name: RABBITMQ_PASSWORD
+            value: "guest"
+          - name: RABBITMQ_CONNECTION_ATTEMPTS
+            value: "5"
+          - name: RABBITMQ_RETRY_DELAY
+            value: "5"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: publisher-headless
+  labels:
+    app: publisher
+spec:
+  ports:
+    - port: 8000
+      name: http
+  clusterIP: None
+  selector:
+    app: publisher
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: publisher-node1
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: publisher-0
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+      nodePort: 31010
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: publisher-node2
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: publisher-1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+      nodePort: 31001
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: publisher-node3
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: publisher-2
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+      nodePort: 31002
+  type: NodePort
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: subscriber
+spec:
+  serviceName: "subscriber-headless"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: subscriber
+  template:
+    metadata:
+      labels:
+        app: subscriber
+    spec:
+      # 
+      containers:
+      - name: subscriber
+        image: shreyashc2409/tech-news-subscriber2:multiarch
+        ports:
+          - containerPort: 8001
+        env:
+          - name: NODE_ID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: AUTH_TOKEN
+            value: "secret"
+          - name: RABBITMQ_HOST
+            value: "rabbitmq"
+          - name: RABBITMQ_USERNAME
+            value: "guest"
+          - name: RABBITMQ_PASSWORD
+            value: "guest"
+          - name: RABBITMQ_CONNECTION_ATTEMPTS
+            value: "5"
+          - name: RABBITMQ_RETRY_DELAY
+            value: "5"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscriber-headless
+  labels:
+    app: subscriber
+spec:
+  ports:
+    - port: 8001
+      name: http
+  clusterIP: None
+  selector:
+    app: subscriber
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscriber-node1
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: subscriber-0
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8001
+      nodePort: 31100
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscriber-node2
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: subscriber-1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8001
+      nodePort: 31101
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscriber-node3
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: subscriber-2
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8001
+      nodePort: 31102
+  type: NodePort
