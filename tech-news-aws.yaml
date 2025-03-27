@@ -107,7 +107,7 @@ spec:
       # 
       containers:
       - name: publisher
-        image: shreyashc2409/tech-news-publisher1:multiarch
+        image: your-dockerdesktop-username/tech-news-publisher1:multiarch
         ports:
           - containerPort: 8000
         env:
@@ -207,7 +207,7 @@ spec:
       # 
       containers:
       - name: subscriber
-        image: shreyashc2409/tech-news-subscriber2:multiarch
+        image: your-dockerdesktop-username/tech-news-subscriber2:multiarch
         ports:
           - containerPort: 8001
         env:
