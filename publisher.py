@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import pika
 import requests
 import threading
@@ -167,7 +166,7 @@ class NewsPublisher:
             self.broker_connection.close()
 
 def gather_news_articles(publisher):
-    API_ACCESS_KEY = os.environ.get("NEWS_API_KEY", "")
+    API_ACCESS_KEY = os.environ.get("NEWS_API_KEY", "YOUR-API-KEY")
     news_client = NewsApiClient(api_key=API_ACCESS_KEY)
     retrieval_interval = int(os.environ.get("NEWS_FETCH_INTERVAL", "120"))
     article_version = 100000
