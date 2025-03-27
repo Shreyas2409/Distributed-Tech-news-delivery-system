@@ -144,7 +144,7 @@ spec:
     spec:
       containers:
       - name: publisher
-        image: shreyashc2409/tech-news-publisher:latest
+        image: your-dockerdesktop-username/tech-news-publisher:latest
         ports:
           - containerPort: 8000
         env:
@@ -245,7 +245,7 @@ spec:
     spec:
       containers:
       - name: subscriber
-        image: shreyashc2409/tech-news-subscriber:latest
+        image: your-dockerdesktop-username/tech-news-subscriber:latest
         ports:
           - containerPort: 8001
         env:
