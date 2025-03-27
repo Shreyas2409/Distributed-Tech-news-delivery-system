@@ -12,7 +12,6 @@ class PublisherUser(HttpUser):
     
     @task(1)
     def send_heartbeat(self):
-        """Simulates heartbeat messages sent to consensus endpoint"""
         node_id = f"test-server-{random.randint(1, 100)}"
         payload = {
             "type": "heartbeat",
