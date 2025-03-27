@@ -167,7 +167,7 @@ class NewsPublisher:
             self.broker_connection.close()
 
 def gather_news_articles(publisher):
-    API_ACCESS_KEY = os.environ.get("NEWS_API_KEY", "f47e7ab31588411dafdf6f1c9e2cfbc7")
+    API_ACCESS_KEY = os.environ.get("NEWS_API_KEY", "")
     news_client = NewsApiClient(api_key=API_ACCESS_KEY)
     retrieval_interval = int(os.environ.get("NEWS_FETCH_INTERVAL", "120"))
     article_version = 100000
