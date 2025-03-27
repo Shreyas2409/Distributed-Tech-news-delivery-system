@@ -118,7 +118,7 @@ spec:
           - name: AUTH_TOKEN
             value: "secret"
           - name: NEWS_API_KEY
-            value: "f47e7ab31588411dafdf6f1c9e2cfbc7"
+            value: "YOUR-API-KEY"
           - name: RABBITMQ_HOST
             value: "rabbitmq"
           - name: RABBITMQ_USERNAME
