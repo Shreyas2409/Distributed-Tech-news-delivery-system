@@ -4,9 +4,6 @@ import random
 from locust import HttpUser, task, between, events
 
 class SubscriberUser(HttpUser):
-    """
-    Simulates users interacting with the subscriber service
-    """
     host = "http://localhost:31100"  
     wait_time = between(1, 3)
     
@@ -17,7 +14,7 @@ class SubscriberUser(HttpUser):
     
     @task(3)
     def subscribe_to_topic(self):
-        """Subscribe to a random topic"""
+      
         if len(self.subscribed_topics) >= len(self.available_topics):
             return
             
@@ -43,7 +40,6 @@ class SubscriberUser(HttpUser):
     
     @task(1)
     def unsubscribe_from_topic(self):
-        """Unsubscribe from a random topic"""
         if not self.subscribed_topics:
             return
             
@@ -62,7 +58,6 @@ class SubscriberUser(HttpUser):
     
     @task(5)
     def get_news(self):
-        """Get all news articles"""
         with self.client.get("/news", catch_response=True) as response:
             if response.status_code == 200:
                 articles = response.json().get("articles", [])
